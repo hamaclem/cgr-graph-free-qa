@@ -5,23 +5,18 @@ from openai import OpenAI
 RETRIEVAL_PATH = "results/retrieval/retrieval_results.xlsx"
 SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_prompt.txt"
 
-TOP_K = 5
-
 LLM_CONFIGS = {
     "hu": {
         "base_url": "https://llm3-compute.cms.hu-berlin.de/v1",
-        "model": "llm3",
-        "output_path": "results/answers/rag_answers_hu.xlsx",
+        "model": "llm3"
     },
     "qwen2.5": {
         "base_url": "http://localhost:11434/v1",
-        "model": "qwen2.5:14b",
-        "output_path": "results/answers/rag_answers_qwen2.5.xlsx",
+        "model": "qwen2.5:14b"
     },
     "llama3.1": {
         "base_url": "http://localhost:11434/v1",
-        "model": "llama3.1:8b",
-        "output_path": "results/answers/rag_answers_llama3.1.xlsx",
+        "model": "llama3.1:8b"
     }
 }
 
@@ -81,6 +76,11 @@ def parse_llm():
         choices=LLM_CONFIGS.keys(),
         default="hu"
     )
+    parser.add_argument(
+        "--top_k",
+        type=int,
+        default=5
+    )
 
     args = parser.parse_args()
 
@@ -91,11 +91,12 @@ def parse_llm():
         api_key=OPENAI_API_KEY,
     )
 
-    return client, config
-
+    return client, config, args.llm, args.top_k
     
 def main():
-    client, config = parse_llm()
+    client, config, llm, top_k = parse_llm()
+
+    output_path = f"results/answers/rag_answers_{llm}_top{top_k}.xlsx"
     
     retrieval_df = pd.read_excel(RETRIEVAL_PATH)
 
@@ -105,7 +106,7 @@ def main():
     results = []
 
     for query_id, (query, group) in enumerate(retrieval_df.groupby("query", sort=False), start=1):
-        retrieved_chunks = group.head(TOP_K)
+        retrieved_chunks = group.head(top_k)
 
         full_answer = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"])
         short_answer = extract_short_answer(full_answer)
@@ -118,7 +119,7 @@ def main():
         })
 
     results_df = pd.DataFrame(results)
-    results_df.to_excel(config["output_path"], index=False)
+    results_df.to_excel(output_path, index=False)
 
 if __name__ == "__main__":
     main()

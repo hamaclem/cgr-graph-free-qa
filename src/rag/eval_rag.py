@@ -30,12 +30,15 @@ def token_f1(prediction, ground_truth):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("model")
-    model = parser.parse_args().model
+    parser.add_argument("--llm", type=str, default="hu")
+    parser.add_argument("--top_k", type=int, default=5)
+    args = parser.parse_args()
 
-    rag_answers_path = f"results/answers/rag_answers_{model}.xlsx"
-    output_path = f"results/evaluation/answers/eval_rag_{model}.xlsx"
-    
+    model = args.llm
+    top_k = args.top_k
+    rag_answers_path = f"results/answers/rag_answers_{model}_top{top_k}.xlsx"
+    output_path = f"results/evaluation/answers/eval_rag_{model}_top{top_k}.xlsx"
+
     rag_df = pd.read_excel(rag_answers_path)
 
     ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
