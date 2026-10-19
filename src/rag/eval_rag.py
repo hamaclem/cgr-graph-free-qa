@@ -1,10 +1,9 @@
+import argparse
 import pandas as pd
 import re
 from collections import Counter
 
 GROUND_TRUTH_PATH = "data/raw/condmedqa.xlsx"
-RAG_ANSWERS_PATH = "results/answers/rag_answers.xlsx"
-OUTPUT_PATH = "results/evaluation/eval_results.xlsx"
 
 def normalize_answer(text):
     text = str(text).casefold()
@@ -30,16 +29,23 @@ def token_f1(prediction, ground_truth):
     return 2 * prec * recall / (prec + recall)
 
 def main():
-    ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
-    rag_df = pd.read_excel(RAG_ANSWERS_PATH)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("model")
+    model = parser.parse_args().model
 
+    rag_answers_path = f"results/answers/rag_answers_{model}.xlsx"
+    output_path = f"results/evaluation/answers/eval_rag_{model}.xlsx"
+    
+    rag_df = pd.read_excel(rag_answers_path)
+
+    ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
     ground_truth_df = ground_truth_df.rename(
         columns={"a": "ground_truth"}
     )
 
     results_df = rag_df.merge(
-        ground_truth_df[["q", "ground_truth"]],
-        on="q",
+        ground_truth_df[["id", "ground_truth"]],
+        on="id",
     )
 
     results_df["em"] = results_df.apply(
@@ -52,11 +58,19 @@ def main():
         axis=1
     )
 
-    print(f"EM: {results_df["em"].mean():.2%}")
-    print(f"F1: {results_df["f1"].mean():.2%}")
+    metrics_df = pd.DataFrame([{
+        "EM": results_df["em"].mean(),
+        "F1": results_df["f1"].mean()
+    }])
 
-    results_df = results_df[["q", "a", "ground_truth", "em", "f1"]]
-    results_df.to_excel(OUTPUT_PATH, index=False)
+    print(f"EM: {metrics_df["EM"].iloc[0]:.2%}")
+    print(f"F1: {metrics_df["F1"].iloc[0]:.2%}")
+
+    results_df = results_df[["id", "q", "ground_truth", "a", "em", "f1"]]
+
+    with pd.ExcelWriter(output_path) as writer:
+        results_df.to_excel(writer, sheet_name="Answers", index=False)
+        metrics_df.to_excel(writer, sheet_name="Metrics", index=False)
 
 if __name__ == "__main__":
     main()
