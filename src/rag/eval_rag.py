@@ -56,7 +56,7 @@ def parse_args():
 def main():
     llm, embed, top_k = parse_args()
 
-    rag_answers_path = f"results/answers/rag_answers_{llm}_{embed}_top{top_k}.xlsx"
+    rag_answers_path = f"results/answers/answers_{llm}_{embed}_top{top_k}.xlsx"
     output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}_top{top_k}.xlsx"
 
     rag_df = pd.read_excel(rag_answers_path)
