@@ -1,9 +1,8 @@
+import argparse
 import pandas as pd
 from urllib.parse import urlparse, unquote
 
 GROUND_TRUTH_PATH = "data/raw/condmedqa.xlsx"
-RESULTS_PATH = "results/retrieval/retrieval_results.xlsx"
-OUTPUT_PATH = "results/evaluation/retrieval/eval_retrieval.csv"
 
 def extract_article(article):
     article = urlparse(article).path.split("/")[-1]
@@ -12,8 +11,19 @@ def extract_article(article):
     return article
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--embed",  
+        choices=["medcpt", "hu"],
+        default="medcpt"
+    )
+    args = parser.parse_args()
+
+    results_path = f"results/retrieval/retrieval_results_{args.embed}.xlsx"
+    output_path = f"results/evaluation/retrieval/eval_retrieval_{args.embed}.csv"
+
     ground_truth = pd.read_excel(GROUND_TRUTH_PATH)
-    retrieval_results = pd.read_excel(RESULTS_PATH)
+    retrieval_results = pd.read_excel(results_path)
 
     relevant_articles = {}
 
@@ -51,7 +61,7 @@ def main():
 
     evaluation_df = pd.DataFrame(evaluation)
 
-    evaluation_df.to_csv(OUTPUT_PATH, index=False)
+    evaluation_df.to_csv(output_path, index=False)
 
     summary = pd.DataFrame([{
         "mean_recall_at_5": evaluation_df["recall_at_5"].mean(),

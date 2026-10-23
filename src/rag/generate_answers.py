@@ -2,7 +2,6 @@ import argparse
 import pandas as pd
 from openai import OpenAI
 
-RETRIEVAL_PATH = "results/retrieval/retrieval_results.xlsx"
 SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_prompt.txt"
 
 LLM_CONFIGS = {
@@ -69,12 +68,19 @@ def extract_short_answer(response):
 
     return response.strip()
 
-def parse_llm():
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--llm",
         choices=LLM_CONFIGS.keys(),
+        type=str,
         default="hu"
+    )
+    parser.add_argument(
+        "--embed",
+        choices=["medcpt", "hu"],
+        type=str,
+        default="medcpt"
     )
     parser.add_argument(
         "--top_k",
@@ -91,14 +97,15 @@ def parse_llm():
         api_key=OPENAI_API_KEY,
     )
 
-    return client, config, args.llm, args.top_k
+    return client, config, args.llm, args.embed, args.top_k
     
 def main():
-    client, config, llm, top_k = parse_llm()
+    client, config, llm, embed, top_k = parse_args()
 
-    output_path = f"results/answers/rag_answers_{llm}_top{top_k}.xlsx"
+    retrieval_path = f"results/retrieval/retrieval_results_{embed}.xlsx"
+    output_path = f"results/answers/answers_{llm}_{embed}_top{top_k}.xlsx"
     
-    retrieval_df = pd.read_excel(RETRIEVAL_PATH)
+    retrieval_df = pd.read_excel(retrieval_path)
 
     with open(SYSTEM_PROMPT_PATH, "r") as file:
         system_prompt = file.read()

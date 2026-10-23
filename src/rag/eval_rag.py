@@ -28,16 +28,36 @@ def token_f1(prediction, ground_truth):
 
     return 2 * prec * recall / (prec + recall)
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--llm", type=str, default="hu")
-    parser.add_argument("--top_k", type=int, default=5)
+    parser.add_argument(
+        "--llm",
+        choices=["hu", "qwen2.5", "llama3.1"],
+        type=str,
+        default="hu"
+    )
+    parser.add_argument(
+        "--embed",
+        choices=["medcpt", "hu"],
+        type=str,
+        default="medcpt"
+    )
+    parser.add_argument(
+        "--top_k",
+        type=int,
+        default=5
+    )
+
     args = parser.parse_args()
 
-    model = args.llm
-    top_k = args.top_k
-    rag_answers_path = f"results/answers/rag_answers_{model}_top{top_k}.xlsx"
-    output_path = f"results/evaluation/answers/eval_rag_{model}_top{top_k}.xlsx"
+    return args.llm, args.embed, args.top_k
+
+    
+def main():
+    llm, embed, top_k = parse_args()
+
+    rag_answers_path = f"results/answers/rag_answers_{llm}_{embed}_top{top_k}.xlsx"
+    output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}_top{top_k}.xlsx"
 
     rag_df = pd.read_excel(rag_answers_path)
 
