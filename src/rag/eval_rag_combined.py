@@ -6,7 +6,7 @@ OUTPUT_PATH = "results/evaluation/answers/eval_rag_combined.xlsx"
 
 def main():
     models = ["hu", "qwen2.5", "llama3.1"]
-    top_ks = [5]
+    top_ks = [1, 3, 5, 10]
 
     ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
     combined_df = ground_truth_df[["id", "q", "a"]].rename(
@@ -44,6 +44,22 @@ def main():
     with pd.ExcelWriter(OUTPUT_PATH) as writer:
         combined_df.to_excel(writer, sheet_name="Answers", index=False)
         metrics_df.to_excel(writer, sheet_name="Metrics", index=False)
+
+    latex_table = metrics_df.to_latex(
+        index=False,
+        columns=["model", "top_k", "EM", "F1"],
+        formatters={
+            "EM": "{:.2%}".format,
+            "F1": "{:.2%}".format,
+        },
+        caption="Evaluation results for different models and top-k values.",
+        label="tab:rag_metrics",
+        column_format="lrrr",
+        escape=True
+    )
+
+    with open("results/evaluation/answers/metrics_table.tex", "w") as f:
+        f.write(latex_table)
 
 if __name__ == "__main__":
     main()
