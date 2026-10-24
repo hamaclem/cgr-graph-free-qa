@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from openai import OpenAI
+from tqdm import tqdm
 
 SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_prompt.txt"
 
@@ -112,7 +113,15 @@ def main():
 
     results = []
 
-    for query_id, (query, group) in enumerate(retrieval_df.groupby("query", sort=False), start=1):
+    query_groups = retrieval_df.groupby("query", sort=False)
+    for query_id, (query, group) in enumerate(
+        tqdm(
+            query_groups,
+            total=retrieval_df["query"].nunique(),
+            desc="Generating answers",
+            unit="question"
+        ), start=1):
+
         retrieved_chunks = group.head(top_k)
 
         full_answer = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"])

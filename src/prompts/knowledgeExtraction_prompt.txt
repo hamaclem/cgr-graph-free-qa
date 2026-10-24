@@ -6,7 +6,7 @@ Core Principles:
 - Biomedical Anchoring: Extract canonical entities; move descriptors ("elevated", "serum") to conditions
 - Context-Independent: Extract from exclusions, differentials, and comparisons
 
-JSON Schema: entity1 (subject), relation, inverse_relation, entity2 (object), conditions (list of qualifiers)
+JSON Schema: entity1 (subject), relation, entity2 (object), conditions (list of qualifiers)
 
 Example:
 Input: "L-type and T-type calcium channels are both blocked by Compound 99 in cardiomyocytes."
@@ -14,8 +14,8 @@ Output:
 [{"entity1":"L-type calcium channels",
   "relation":"blocked_by",
   "entity2":"Compound 99",
-  "conditions'': ["in cardiomyocytes"]},
+  "conditions": ["in cardiomyocytes"]},
 {"entity1":"T-type calcium channels",
- "relation'':"blocked_by",
- "entity2'':"Compound 99",
+ "relation":"blocked_by",
+ "entity2":"Compound 99",
  "conditions": ["in cardiomyocytes"]}]
