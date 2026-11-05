@@ -49,6 +49,9 @@ def main():
 
         docs.extend(collect_sections(article["sections"], title))
 
+    for i, doc in enumerate(docs, start=1):
+        doc["id"] = f"doc_{i:04d}"
+
     with open(DOCS_PATH, "w") as f:
         json.dump(docs, f, ensure_ascii=False, indent=2)
 

@@ -2,7 +2,7 @@ import json
 from transformers import AutoTokenizer
 
 DOCS_PATH = "data/processed/docs_simple.json"
-CHUNKS_PATH = "data/processed/chunks.json"
+CHUNKS_PATH = "data/processed/chunks_simple.json"
 
 MAX_CHUNK_LENGTH = 512
 STRIDE = 64
@@ -54,6 +54,15 @@ def create_chunks(tokenizer, doc, start_chunk_id):
             "text": chunk_text,
             "metadata": {
                 **doc["metadata"],
+                "chunk_id": start_chunk_id + i
+            }
+        }
+
+        chunk = {
+            "text": chunk_text,
+            "metadata": {
+                **doc["metadata"],
+                "doc_id": doc["id"],
                 "chunk_id": start_chunk_id + i
             }
         }

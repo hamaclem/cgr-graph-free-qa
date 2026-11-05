@@ -142,6 +142,9 @@ def create_docs(tokenizer, articles):
 
         docs.extend(collect_sections(tokenizer, article["sections"], title))
 
+    for i, doc in enumerate(docs, start=1):
+            doc["id"] = f"doc_{i:04d}"
+
     return docs
 
 def main():
