@@ -7,7 +7,9 @@ GROUND_TRUTH_PATH = "data/raw/condmedqa.xlsx"
 
 def normalize_answer(text):
     text = str(text).casefold()
-    text = re.sub(r"[^\w\s]", "", text)
+    text = re.sub(r"\([^)]*\)", "", text)  # Remove parentheses and contents
+    text = re.sub(r"[-–—]", " ", text)     # Replace hyphens and dashes
+    text = re.sub(r"[^\w\s]", "", text)    # Remove remaining punctuation
     return " ".join(text.split())
 
 def exact_match(prediction, ground_truth):
@@ -47,17 +49,22 @@ def parse_args():
         type=int,
         default=5
     )
+    parser.add_argument(
+        "--normalized",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
-    return args.llm, args.embed, args.top_k
+    return args.llm, args.embed, args.top_k, args.normalized
 
     
 def main():
-    llm, embed, top_k = parse_args()
+    llm, embed, top_k, normalized = parse_args()
 
-    rag_answers_path = f"results/answers/answers_{llm}_{embed}_top{top_k}.xlsx"
-    output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}_top{top_k}.xlsx"
+    infix = "_normalized" if normalized else ""
+    rag_answers_path = f"results/answers/answers_{llm}_{embed}{infix}_top{top_k}.xlsx"
+    output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}{infix}_top{top_k}.xlsx"
 
     rag_df = pd.read_excel(rag_answers_path)
 

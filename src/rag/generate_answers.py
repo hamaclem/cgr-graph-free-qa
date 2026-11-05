@@ -88,6 +88,10 @@ def parse_args():
         type=int,
         default=5
     )
+    parser.add_argument(
+        "--normalized",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -98,13 +102,14 @@ def parse_args():
         api_key=OPENAI_API_KEY,
     )
 
-    return client, config, args.llm, args.embed, args.top_k
+    return client, config, args.llm, args.embed, args.top_k, args.normalized
     
 def main():
-    client, config, llm, embed, top_k = parse_args()
+    client, config, llm, embed, top_k, normalized = parse_args()
 
-    retrieval_path = f"results/retrieval/retrieval_results_{embed}.xlsx"
-    output_path = f"results/answers/answers_{llm}_{embed}_top{top_k}.xlsx"
+    suffix = "_normalized" if normalized else ""
+    retrieval_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
+    output_path = f"results/answers/answers_{llm}_{embed}{suffix}_top{top_k}.xlsx"
     
     retrieval_df = pd.read_excel(retrieval_path)
 

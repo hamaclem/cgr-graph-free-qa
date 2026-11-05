@@ -22,8 +22,11 @@ def get_device():
 
     return torch.device("cpu")
 
-def process_batch(batch_queries, encode_queries, index, chunks):
+def process_batch(batch_queries, encode_queries, index, chunks, normalized):
     embeds = encode_queries(batch_queries)
+
+    if normalized:
+        faiss.normalize_L2(embeds)
 
     scores, indices = index.search(embeds, TOP_K)
 
@@ -55,6 +58,11 @@ def parse_embedding_model():
         choices=["medcpt", "hu"],
         default="medcpt"
     )
+    parser.add_argument(
+        "--normalized",
+        action="store_true"
+    )
+    
     args = parser.parse_args()
 
     if args.embed == "medcpt":
@@ -68,16 +76,19 @@ def parse_embedding_model():
         def encode(batch_queries):
             return encode_medcpt_queries(batch_queries, tokenizer, model, device)
 
-        index_path = "data/processed/medcpt_faiss.index"
-
+        infix = "_normalized" if args.normalized else ""
+        index_path = f"data/processed/medcpt{infix}_faiss.index"
+            
     else:
         encode = encode_hu_queries
-        index_path = "data/processed/hu_faiss.index"
 
-    return args.embed, encode, index_path
+        infix = "_normalized" if args.normalized else ""
+        index_path = f"data/processed/hu{infix}_faiss.index"
+            
+    return args.embed, args.normalized, encode, index_path
 
 def main():
-    embed, encode, index_path = parse_embedding_model()
+    embed, normalized, encode, index_path = parse_embedding_model()
     queries = pd.read_excel(QUERIES_PATH)
     queries = queries["q"].tolist()
 
@@ -90,9 +101,10 @@ def main():
 
     for start in range(0, len(queries), BATCH_SIZE):
         batch_queries = queries[start:start + BATCH_SIZE]
-        results.extend(process_batch(batch_queries, encode, index, chunks))
+        results.extend(process_batch(batch_queries, encode, index, chunks, normalized))
 
-    output_path = f"results/retrieval/retrieval_results_{embed}.xlsx"
+    suffix = "_normalized" if normalized else ""
+    output_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
 
     results_df = pd.DataFrame(results)
     results_df.to_excel(output_path, index=False)

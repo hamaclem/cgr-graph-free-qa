@@ -5,7 +5,7 @@ import faiss
 def parse_model():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model",
+        "--embed",
         choices=["medcpt", "hu"],
         required=True
     )
@@ -15,13 +15,15 @@ def parse_model():
     )
     args = parser.parse_args()
 
-    return args.model, args.normalize
+    return args.embed, args.normalize
 
 def main():
-    model, normalize = parse_model()
+    embed, normalize = parse_model()
 
-    embeddings_path = f"data/processed/{model}_embeds.npy"
-    index_path = f"data/processed/{model}_faiss.index"
+    embeddings_path = f"data/processed/{embed}_embeds.npy"
+    
+    suffix = "_normalized" if normalize else ""
+    index_path = f"data/processed/{embed}{suffix}_faiss.index" 
 
     embeds = np.load(embeddings_path).astype(np.float32)
 
