@@ -90,10 +90,14 @@ def parse_args():
     )
     parser.add_argument(
         "--normalized",
-        action="store_true"
+        action=argparse.BooleanOptionalAction,
+        default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
 
     args = parser.parse_args()
+
+    if args.normalized is None:
+        args.normalized = args.embed == "hu"
 
     config = LLM_CONFIGS[args.llm]
 
@@ -107,7 +111,7 @@ def parse_args():
 def main():
     client, config, llm, embed, top_k, normalized = parse_args()
 
-    suffix = "_normalized" if normalized else ""
+    suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     retrieval_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
     output_path = f"results/answers/answers_{llm}_{embed}{suffix}_top{top_k}.xlsx"
     

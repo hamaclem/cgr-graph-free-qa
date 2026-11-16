@@ -11,9 +11,12 @@ def parse_model():
     )
     parser.add_argument(
         "--normalize",
-        action="store_true"
+        action=argparse.BooleanOptionalAction,
+        default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
     args = parser.parse_args()
+    if args.normalize is None:
+        args.normalize = args.embed == "hu"
 
     return args.embed, args.normalize
 
@@ -22,7 +25,7 @@ def main():
 
     embeddings_path = f"data/processed/{embed}_embeds.npy"
     
-    suffix = "_normalized" if normalize else ""
+    suffix = "" if normalize == (embed == "hu") else ("_normalized" if normalize else "_unnormalized")  # suffix only when deviating from per-model default
     index_path = f"data/processed/{embed}{suffix}_faiss.index" 
 
     embeds = np.load(embeddings_path).astype(np.float32)

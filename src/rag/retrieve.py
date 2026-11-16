@@ -60,10 +60,14 @@ def parse_embedding_model():
     )
     parser.add_argument(
         "--normalized",
-        action="store_true"
+        action=argparse.BooleanOptionalAction,
+        default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
     
     args = parser.parse_args()
+
+    if args.normalized is None:
+        args.normalized = args.embed == "hu"
 
     if args.embed == "medcpt":
         device = get_device()
@@ -82,7 +86,7 @@ def parse_embedding_model():
     else:
         encode = encode_hu_queries
 
-        infix = "_normalized" if args.normalized else ""
+        infix = "" if args.normalized else "_unnormalized"
         index_path = f"data/processed/hu{infix}_faiss.index"
             
     return args.embed, args.normalized, encode, index_path
@@ -103,7 +107,7 @@ def main():
         batch_queries = queries[start:start + BATCH_SIZE]
         results.extend(process_batch(batch_queries, encode, index, chunks, normalized))
 
-    suffix = "_normalized" if normalized else ""
+    suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     output_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
 
     results_df = pd.DataFrame(results)

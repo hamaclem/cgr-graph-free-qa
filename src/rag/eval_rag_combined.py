@@ -20,7 +20,7 @@ def main():
     for model in llms:
         for embed in embeds:
             for normalized in normalization:
-                suffix = "_normalized" if normalized else ""
+                suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
                 for top_k in top_ks:
                     file = Path(f"results/evaluation/answers/eval_rag_{model}_{embed}{suffix}_top{top_k}.xlsx")
 

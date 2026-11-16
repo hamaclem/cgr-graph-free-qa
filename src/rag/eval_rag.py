@@ -51,10 +51,14 @@ def parse_args():
     )
     parser.add_argument(
         "--normalized",
-        action="store_true"
+        action=argparse.BooleanOptionalAction,
+        default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
 
     args = parser.parse_args()
+
+    if args.normalized is None:
+        args.normalized = args.embed == "hu"
 
     return args.llm, args.embed, args.top_k, args.normalized
 
@@ -62,7 +66,7 @@ def parse_args():
 def main():
     llm, embed, top_k, normalized = parse_args()
 
-    infix = "_normalized" if normalized else ""
+    infix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     rag_answers_path = f"results/answers/answers_{llm}_{embed}{infix}_top{top_k}.xlsx"
     output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}{infix}_top{top_k}.xlsx"
 
