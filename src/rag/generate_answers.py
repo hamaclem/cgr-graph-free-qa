@@ -22,7 +22,7 @@ LLM_CONFIGS = {
 
 OPENAI_API_KEY = "secret_but_not_used"
 
-def create_prompt(query, retrieved_chunks):
+def create_prompt(query, retrieved_chunks, retrieved_tuples=None):
     context_parts = []
 
     for _, chunk in retrieved_chunks.iterrows():
@@ -33,6 +33,16 @@ def create_prompt(query, retrieved_chunks):
         )
 
     context = "\n\n".join(context_parts)
+
+    if retrieved_tuples is not None:
+        facts = "\n".join(
+            f"- {t['text']} [Article: {t['article']}]"
+            for _, t in retrieved_tuples.iterrows()
+        )
+        context += (
+            "\n\nStructured facts (a fact only applies if its conditions match the question):\n"
+            f"{facts}"
+        )
 
     prompt = f"""
         Answer the following biomedical question using the provided evidence.
@@ -45,8 +55,8 @@ def create_prompt(query, retrieved_chunks):
         """
     return prompt
 
-def generate_answer(query, retrieved_chunks, system_prompt, client, model):
-    prompt = create_prompt(query, retrieved_chunks)
+def generate_answer(query, retrieved_chunks, system_prompt, client, model, retrieved_tuples=None):
+    prompt = create_prompt(query, retrieved_chunks, retrieved_tuples)
 
     response = client.chat.completions.create(
         model=model,
@@ -93,6 +103,11 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
+    parser.add_argument(
+        "--tuples_k",
+        type=int,
+        default=0
+    )
 
     args = parser.parse_args()
 
@@ -106,16 +121,22 @@ def parse_args():
         api_key=OPENAI_API_KEY,
     )
 
-    return client, config, args.llm, args.embed, args.top_k, args.normalized
-    
+    return client, config, args.llm, args.embed, args.top_k, args.normalized, args.tuples_k
+
 def main():
-    client, config, llm, embed, top_k, normalized = parse_args()
+    client, config, llm, embed, top_k, normalized, tuples_k = parse_args()
 
     suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     retrieval_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
-    output_path = f"results/answers/answers_{llm}_{embed}{suffix}_top{top_k}.xlsx"
-    
+    tuples_suffix = f"_tuples{tuples_k}" if tuples_k else ""
+    output_path = f"results/answers/answers_{llm}_{embed}{suffix}_top{top_k}{tuples_suffix}.xlsx"
+
     retrieval_df = pd.read_excel(retrieval_path)
+
+    tuple_groups = {}
+    if tuples_k:
+        tuples_df = pd.read_excel(f"results/retrieval/retrieval_results_{embed}{suffix}_tuples.xlsx")
+        tuple_groups = {q: g.sort_values("rank").head(tuples_k) for q, g in tuples_df.groupby("query")}
 
     with open(SYSTEM_PROMPT_PATH, "r") as file:
         system_prompt = file.read()
@@ -132,8 +153,9 @@ def main():
         ), start=1):
 
         retrieved_chunks = group.head(top_k)
+        retrieved_tuples = tuple_groups[query] if tuples_k else None
 
-        full_answer = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"])
+        full_answer = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"], retrieved_tuples)
         short_answer = extract_short_answer(full_answer)
 
         results.append({

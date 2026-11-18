@@ -1,10 +1,8 @@
-import json
+import argparse
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModel
-
-CHUNKS_PATH = "data/processed/chunks_merged.json"
-EMBEDDINGS_PATH = "data/processed/medcpt_embeds.npy"
+from load_texts import load_texts
 
 BATCH_SIZE = 32
 MAX_CHUNK_LENGTH = 512
@@ -19,21 +17,14 @@ def get_device():
 
     return torch.device("cpu")
 
-def generate_embeddings(chunks, tokenizer, model, device):
+def generate_embeddings(texts, tokenizer, model, device):
     embeds = []
-    
-    for start in range(0, len(chunks), BATCH_SIZE):
-        batch = chunks[start:start + BATCH_SIZE]
-        
-        texts = [
-            f"{chunk['metadata']['article'].lower()}\n"
-            f"{' > '.join(chunk['metadata']['section_path']).lower()}\n"
-            f"{chunk['text']}"
-            for chunk in batch
-        ]
+
+    for start in range(0, len(texts), BATCH_SIZE):
+        batch = texts[start:start + BATCH_SIZE]
 
         inputs = tokenizer(
-            texts,
+            batch,
             padding=True,
             truncation=True,
             max_length=MAX_CHUNK_LENGTH,
@@ -54,6 +45,14 @@ def generate_embeddings(chunks, tokenizer, model, device):
     return torch.cat(embeds).numpy()
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--source", 
+        choices=["chunks", "tuples"], 
+        default="chunks"
+    )
+    source = parser.parse_args().source
+
     device = get_device()
 
     model = AutoModel.from_pretrained("ncbi/MedCPT-Article-Encoder")
@@ -62,12 +61,10 @@ def main():
     model.eval()
     model.to(device)
 
-    with open(CHUNKS_PATH, "r") as f:
-        chunks = json.load(f)
+    embeds = generate_embeddings(load_texts(source), tokenizer, model, device)
 
-    embeds = generate_embeddings(chunks, tokenizer, model, device)
-
-    np.save(EMBEDDINGS_PATH, embeds)
+    infix = "_tuple" if source == "tuples" else ""
+    np.save(f"data/processed/medcpt{infix}_embeds.npy", embeds)
 
 if __name__ == "__main__":
     main()

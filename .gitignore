@@ -1,2 +1,7 @@
 .DS_Store
 __pycache__
+extract_docs_examples.py 
+docs_examples.txt
+docs_example.docx
+data/processed/hu_tuple_embeds.npy
+data/processed/hu_tuple_faiss.index

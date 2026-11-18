@@ -8,6 +8,7 @@ def main():
     llms = ["hu", "qwen2.5", "llama3.1"]
     embeds = ["medcpt", "hu"]
     top_ks = [1, 3, 5, 10]
+    tuples_ks = [0, 5, 10]
 
     ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
     combined_df = ground_truth_df[["id", "q", "a"]].rename(
@@ -19,29 +20,32 @@ def main():
     for model in llms:
         for embed in embeds:
                 for top_k in top_ks:
-                    file = Path(f"results/evaluation/answers/eval_rag_{model}_{embed}_top{top_k}.xlsx")
+                    for tuples_k in tuples_ks:
+                        name = f"{model}_{embed}_top{top_k}" + (f"_tuples{tuples_k}" if tuples_k else "")
+                        file = Path(f"results/evaluation/answers/eval_rag_{name}.xlsx")
 
-                    df = pd.read_excel(file)
+                        df = pd.read_excel(file)
 
-                    answers = df[["id", "a"]].rename(
-                        columns={"a": f"a_{model}_{embed}_top{top_k}"}
-                    )
-                    combined_df = combined_df.merge(answers, on="id", how="left")
+                        answers = df[["id", "a"]].rename(
+                            columns={"a": f"a_{name}"}
+                        )
+                        combined_df = combined_df.merge(answers, on="id", how="left")
 
-                    metrics.append({
-                        "model": model,
-                        "embedding_model": embed,
-                        "top_k": top_k,
-                        "EM": df["em"].mean(),
-                        "F1": df["f1"].mean()
-                    })
+                        metrics.append({
+                            "model": model,
+                            "embedding_model": embed,
+                            "top_k": top_k,
+                            "tuples_k": tuples_k,
+                            "EM": df["em"].mean(),
+                            "F1": df["f1"].mean()
+                        })
 
     metrics_df = pd.DataFrame(metrics)
 
     for _, row in metrics_df.iterrows():
         print(
             f'{row["model"]}, embedding={row["embedding_model"]}, '
-            f'top_k={row["top_k"]}: '
+            f'top_k={row["top_k"]}, tuples_k={row["tuples_k"]}: '
             f'EM: {row["EM"]:.2%}, F1: {row["F1"]:.2%}'
         )
 

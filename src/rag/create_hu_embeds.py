@@ -1,9 +1,7 @@
-import json
+import argparse
 import numpy as np
 from openai import OpenAI
-
-CHUNKS_PATH = "data/processed/chunks_merged.json"
-EMBEDDINGS_PATH = "data/processed/hu_embeds.npy"
+from load_texts import load_texts
 
 BASE_URL = "https://llm5-compute.cms.hu-berlin.de/v1"
 MODEL = "llm5"
@@ -11,24 +9,17 @@ OPENAI_API_KEY = "secret_but_not_used"
 
 BATCH_SIZE = 32
 
-def generate_embeddings(chunks):
+def generate_embeddings(texts):
     client = OpenAI(base_url=BASE_URL, api_key=OPENAI_API_KEY)
 
     embeds = []
 
-    for start in range(0, len(chunks), BATCH_SIZE):
-        batch = chunks[start:start + BATCH_SIZE]
-
-        texts = [
-            f"{chunk['metadata']['article'].lower()}\n"
-            f"{' > '.join(chunk['metadata']['section_path']).lower()}\n"
-            f"{chunk['text']}"
-            for chunk in batch
-        ]
+    for start in range(0, len(texts), BATCH_SIZE):
+        batch = texts[start:start + BATCH_SIZE]
 
         response = client.embeddings.create(
             model=MODEL,
-            input=texts
+            input=batch
         )
 
         batch_data = sorted(
@@ -46,12 +37,18 @@ def generate_embeddings(chunks):
     return np.concatenate(embeds, axis=0)
 
 def main():
-    with open(CHUNKS_PATH, "r") as f:
-        chunks = json.load(f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--source", 
+        choices=["chunks", "tuples"], 
+        default="chunks"
+    )
+    source = parser.parse_args().source
 
-    embeds = generate_embeddings(chunks)
+    embeds = generate_embeddings(load_texts(source))
 
-    np.save(EMBEDDINGS_PATH, embeds)
+    infix = "_tuple" if source == "tuples" else ""
+    np.save(f"data/processed/hu{infix}_embeds.npy", embeds)
 
 if __name__ == "__main__":
     main()

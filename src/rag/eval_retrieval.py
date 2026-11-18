@@ -23,11 +23,17 @@ def main():
         action=argparse.BooleanOptionalAction,
         default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
+    parser.add_argument(
+        "--source", 
+        choices=["chunks", "tuples"], 
+        default="chunks"
+    )
     args = parser.parse_args()
     if args.normalized is None:
         args.normalized = args.embed == "hu"
 
     suffix = "" if args.normalized == (args.embed == "hu") else ("_normalized" if args.normalized else "_unnormalized")  # suffix only when deviating from per-model default
+    suffix += "_tuples" if args.source == "tuples" else ""
 
     results_path = f"results/retrieval/retrieval_results_{args.embed}{suffix}.xlsx"
     output_path = f"results/evaluation/retrieval/eval_retrieval_{args.embed}{suffix}.xlsx"

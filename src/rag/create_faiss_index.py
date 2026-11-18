@@ -14,19 +14,25 @@ def parse_model():
         action=argparse.BooleanOptionalAction,
         default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
+    parser.add_argument(
+        "--source", 
+        choices=["chunks", "tuples"], 
+        default="chunks"
+    )
     args = parser.parse_args()
     if args.normalize is None:
         args.normalize = args.embed == "hu"
 
-    return args.embed, args.normalize
+    return args.embed, args.normalize, args.source
 
 def main():
-    embed, normalize = parse_model()
+    embed, normalize, source = parse_model()
 
-    embeddings_path = f"data/processed/{embed}_embeds.npy"
-    
+    tuple_infix = "_tuple" if source == "tuples" else ""
+    embeddings_path = f"data/processed/{embed}{tuple_infix}_embeds.npy"
+
     suffix = "" if normalize == (embed == "hu") else ("_normalized" if normalize else "_unnormalized")  # suffix only when deviating from per-model default
-    index_path = f"data/processed/{embed}{suffix}_faiss.index" 
+    index_path = f"data/processed/{embed}{tuple_infix}{suffix}_faiss.index"
 
     embeds = np.load(embeddings_path).astype(np.float32)
 

@@ -54,21 +54,27 @@ def parse_args():
         action=argparse.BooleanOptionalAction,
         default=None  # None = per-model default: hu normalized (cosine), medcpt not (dot product)
     )
+    parser.add_argument(
+        "--tuples_k",
+        type=int,
+        default=0
+    )
 
     args = parser.parse_args()
 
     if args.normalized is None:
         args.normalized = args.embed == "hu"
 
-    return args.llm, args.embed, args.top_k, args.normalized
+    return args.llm, args.embed, args.top_k, args.normalized, args.tuples_k
 
-    
+
 def main():
-    llm, embed, top_k, normalized = parse_args()
+    llm, embed, top_k, normalized, tuples_k = parse_args()
 
     infix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
-    rag_answers_path = f"results/answers/answers_{llm}_{embed}{infix}_top{top_k}.xlsx"
-    output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}{infix}_top{top_k}.xlsx"
+    tuples_suffix = f"_tuples{tuples_k}" if tuples_k else ""
+    rag_answers_path = f"results/answers/answers_{llm}_{embed}{infix}_top{top_k}{tuples_suffix}.xlsx"
+    output_path = f"results/evaluation/answers/eval_rag_{llm}_{embed}{infix}_top{top_k}{tuples_suffix}.xlsx"
 
     rag_df = pd.read_excel(rag_answers_path)
 

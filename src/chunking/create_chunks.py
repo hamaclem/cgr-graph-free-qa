@@ -1,8 +1,8 @@
 import json
 from transformers import AutoTokenizer
 
-DOCS_PATH = "data/processed/docs_simple.json"
-CHUNKS_PATH = "data/processed/chunks_simple.json"
+DOCS_PATH = "data/processed/docs_merged.json"
+CHUNKS_PATH = "data/processed/chunks_merged.json"
 
 MAX_CHUNK_LENGTH = 512
 STRIDE = 64
