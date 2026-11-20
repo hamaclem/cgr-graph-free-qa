@@ -1,3 +1,4 @@
+import os
 import json
 import re
 import pandas as pd
@@ -52,6 +53,7 @@ def calculate_descriptive_stats(df):
         "max",
     ]
     
+    os.makedirs(os.path.dirname(STATS_PATH), exist_ok=True)
     stats.to_csv(STATS_PATH)
 
     return stats
@@ -78,6 +80,7 @@ def create_histograms(df):
     axes[2].set_title("Distribution of words per article")
 
     plt.tight_layout()
+    os.makedirs(os.path.dirname(HISTOGRAM_PATH), exist_ok=True)
     plt.savefig(HISTOGRAM_PATH)
 
 def main():

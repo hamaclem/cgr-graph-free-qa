@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 from tqdm.asyncio import tqdm_asyncio
@@ -50,7 +51,7 @@ async def main():
             tuples = json.load(file)
     except FileNotFoundError:
         tuples = []
-    done = {t["source"] for t in tuples}
+    done = {tuple["source"] for tuple in tuples}
     docs = [doc for doc in docs if doc["id"] not in done]
     print(f"{len(done)} docs already done, {len(docs)} to process")
 
@@ -78,6 +79,7 @@ async def main():
 
         tuples.extend(extracted_tuples)
 
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w") as file:
         json.dump(tuples, file, ensure_ascii=False, indent=2)
 

@@ -1,3 +1,4 @@
+import os
 import json
 from transformers import AutoTokenizer
 
@@ -155,6 +156,7 @@ def main():
 
     docs = create_docs(tokenizer, articles)
 
+    os.makedirs(os.path.dirname(DOCS_PATH), exist_ok=True)
     with open(DOCS_PATH, "w") as f:
         json.dump(docs, f, ensure_ascii=False, indent=2)
 

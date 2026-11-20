@@ -1,3 +1,4 @@
+import os
 import asyncio
 import wikipediaapi
 import json
@@ -47,6 +48,7 @@ async def main():
     if missing_articles:
         print(missing_articles)
 
+    os.makedirs(os.path.dirname(ARTICLES_PATH), exist_ok=True)
     with open(ARTICLES_PATH, "w") as f:
         json.dump(articles, f, ensure_ascii=False, indent=2)
 

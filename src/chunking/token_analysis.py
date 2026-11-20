@@ -1,3 +1,4 @@
+import os
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -33,6 +34,7 @@ def get_token_statistics(tokenizer, docs):
     }
 
     stats_df = pd.DataFrame([stats])
+    os.makedirs(os.path.dirname(STATS_PATH), exist_ok=True)
     stats_df.to_csv(STATS_PATH, index=False)
 
     plt.figure(figsize=(10, 6))
@@ -43,6 +45,7 @@ def get_token_statistics(tokenizer, docs):
     plt.title("Distribution of section sizes")
 
     plt.tight_layout()
+    os.makedirs(os.path.dirname(HISTOGRAM_PATH), exist_ok=True)
     plt.savefig(HISTOGRAM_PATH)
 
 def main():

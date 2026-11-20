@@ -1,3 +1,4 @@
+import os
 import argparse
 import pandas as pd
 from urllib.parse import urlparse, unquote
@@ -82,6 +83,7 @@ def main():
 
     evaluation_df = pd.DataFrame(evaluation)
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with pd.ExcelWriter(output_path) as writer:
         evaluation_df.to_excel(writer, sheet_name="Articles", index=False)
 

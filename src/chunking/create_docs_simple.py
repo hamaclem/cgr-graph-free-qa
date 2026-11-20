@@ -1,3 +1,4 @@
+import os
 import json
 
 ARTICLES_PATH = "data/raw/articles_sections.json"
@@ -52,6 +53,7 @@ def main():
     for i, doc in enumerate(docs, start=1):
         doc["id"] = f"doc_{i:04d}"
 
+    os.makedirs(os.path.dirname(DOCS_PATH), exist_ok=True)
     with open(DOCS_PATH, "w") as f:
         json.dump(docs, f, ensure_ascii=False, indent=2)
 

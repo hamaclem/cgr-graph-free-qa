@@ -1,3 +1,4 @@
+import os
 import argparse
 import json
 import faiss
@@ -132,6 +133,7 @@ def main():
     output_path = f"results/retrieval/retrieval_results_{embed}{suffix}{tuple_suffix}.xlsx"
 
     results_df = pd.DataFrame(results)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     results_df.to_excel(output_path, index=False)
     
 if __name__ == "__main__":

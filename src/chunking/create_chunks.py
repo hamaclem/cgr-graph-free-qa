@@ -1,3 +1,4 @@
+import os
 import json
 from transformers import AutoTokenizer
 
@@ -90,6 +91,7 @@ def main():
 
     chunks = create_all_chunks(tokenizer, docs)
 
+    os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
     with open(CHUNKS_PATH, "w") as f:
         json.dump(chunks, f, ensure_ascii=False, indent=2)
 

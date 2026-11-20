@@ -1,3 +1,4 @@
+import os
 import argparse
 import numpy as np
 import faiss
@@ -42,6 +43,7 @@ def main():
     index = faiss.IndexFlatIP(embeds.shape[1])
     index.add(embeds)
 
+    os.makedirs(os.path.dirname(index_path), exist_ok=True)
     faiss.write_index(index, index_path)
 
 if __name__ == "__main__":

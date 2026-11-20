@@ -1,3 +1,4 @@
+import os
 import argparse
 import torch
 import numpy as np
@@ -64,6 +65,7 @@ def main():
     embeds = generate_embeddings(load_texts(source), tokenizer, model, device)
 
     infix = "_tuple" if source == "tuples" else ""
+    os.makedirs("data/processed", exist_ok=True)
     np.save(f"data/processed/medcpt{infix}_embeds.npy", embeds)
 
 if __name__ == "__main__":

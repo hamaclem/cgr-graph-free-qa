@@ -1,3 +1,4 @@
+import os
 import argparse
 import numpy as np
 from openai import OpenAI
@@ -48,6 +49,7 @@ def main():
     embeds = generate_embeddings(load_texts(source))
 
     infix = "_tuple" if source == "tuples" else ""
+    os.makedirs("data/processed", exist_ok=True)
     np.save(f"data/processed/hu{infix}_embeds.npy", embeds)
 
 if __name__ == "__main__":
