@@ -1,0 +1,660 @@
+[
+  {
+    "entity1": "abacavir",
+    "relation": "indicated_for",
+    "entity2": "HIV/AIDS treatment",
+    "conditions": [
+      "children >3 months of age"
+    ],
+    "source": "doc_0001"
+  },
+  {
+    "entity1": "abacavir",
+    "relation": "contraindicated_in",
+    "entity2": "HIV treatment",
+    "conditions": [
+      "HLA-B*5701 allele positive"
+    ],
+    "source": "doc_0003"
+  },
+  {
+    "entity1": "abacavir",
+    "relation": "contraindicated_in",
+    "entity2": "HIV treatment",
+    "conditions": [
+      "moderate liver disease"
+    ],
+    "source": "doc_0003"
+  },
+  {
+    "entity1": "abacavir",
+    "relation": "contraindicated_in",
+    "entity2": "HIV treatment",
+    "conditions": [
+      "severe liver disease"
+    ],
+    "source": "doc_0003"
+  },
+  {
+    "entity1": "abacavir",
+    "relation": "contraindicated_in",
+    "entity2": "HIV treatment",
+    "conditions": [
+      "HLA-B*5701 allele positive"
+    ],
+    "source": "doc_0005"
+  },
+  {
+    "entity1": "HLA-B*5701 screening",
+    "relation": "recommended_for",
+    "entity2": "abacavir therapy",
+    "conditions": [
+      "patients initiating abacavir"
+    ],
+    "source": "doc_0005"
+  },
+  {
+    "entity1": "discontinuation of abacavir",
+    "relation": "recommended_for",
+    "entity2": "suspected hypersensitivity reaction",
+    "conditions": [
+      "patients with suspected abacavir hypersensitivity"
+    ],
+    "source": "doc_0005"
+  },
+  {
+    "entity1": "abacavir half-life",
+    "relation": "increased_by",
+    "entity2": "58%",
+    "conditions": [
+      "liver failure"
+    ],
+    "source": "doc_0009"
+  },
+  {
+    "entity1": "abdominal ultrasound screening",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "males",
+      "age 65-75 years",
+      "history of smoking"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "abdominal ultrasound screening",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "men",
+      "age >65 years"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "surgical repair",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "males",
+      "aneurysm diameter >5.5 cm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "surgical repair",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "females",
+      "aneurysm diameter >5.0 cm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "surgical repair",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "symptomatic abdominal aortic aneurysm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "surgical repair",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "rapid increase in size (>1 cm per year)"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "endovascular aneurysm repair (EVAR)",
+    "relation": "reduces_risk_of",
+    "entity2": "short-term death",
+    "conditions": [
+      "compared to open surgery"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "abdominal aortic aneurysm",
+    "relation": "associated_with",
+    "entity2": "rupture risk <1% in next year",
+    "conditions": [
+      "aneurysm diameter <5.5 cm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "abdominal aortic aneurysm",
+    "relation": "associated_with",
+    "entity2": "rupture risk ~10% in next year",
+    "conditions": [
+      "aneurysm diameter 5.5-7 cm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "abdominal aortic aneurysm",
+    "relation": "associated_with",
+    "entity2": "rupture risk ~33% in next year",
+    "conditions": [
+      "aneurysm diameter >7 cm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "ruptured abdominal aortic aneurysm",
+    "relation": "associated_with",
+    "entity2": "mortality 85-90%",
+    "conditions": [
+      "ruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0011"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm rupture",
+    "relation": "associated_with",
+    "entity2": "mortality as high as 90%",
+    "conditions": [
+      "ruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0013"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm rupture",
+    "relation": "associated_with",
+    "entity2": "mortality 65-75% before hospital arrival",
+    "conditions": [
+      "ruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0013"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm rupture",
+    "relation": "associated_with",
+    "entity2": "mortality up to 90% before reaching operating room",
+    "conditions": [
+      "ruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0013"
+  },
+  {
+    "entity1": "Flank ecchymosis (Grey Turner's sign)",
+    "relation": "suggests",
+    "entity2": "retroperitoneal bleeding",
+    "conditions": [
+      "ruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0013"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm (AAA)",
+    "relation": "associated_with",
+    "entity2": "increased prevalence (4-6 times higher)",
+    "conditions": [
+      "male siblings of known AAA patients"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm (AAA)",
+    "relation": "associated_with",
+    "entity2": "risk of 20-30%",
+    "conditions": [
+      "male siblings of known AAA patients"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm (AAA)",
+    "relation": "associated_with",
+    "entity2": "high familial prevalence",
+    "conditions": [
+      "male individuals"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Abdominal aortic aneurysm (AAA)",
+    "relation": "associated_with",
+    "entity2": "lower incidence",
+    "conditions": [
+      "heterozygous females"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Marfan syndrome",
+    "relation": "associated_with",
+    "entity2": "Abdominal aortic aneurysm (AAA)",
+    "conditions": [
+      "patients with Marfan syndrome"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Ehlers-Danlos syndrome",
+    "relation": "associated_with",
+    "entity2": "Abdominal aortic aneurysm (AAA)",
+    "conditions": [
+      "patients with Ehlers-Danlos syndrome"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Loeys-Dietz syndrome",
+    "relation": "associated_with",
+    "entity2": "Abdominal aortic aneurysm (AAA)",
+    "conditions": [
+      "patients with Loeys-Dietz syndrome"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Relapsing polychondritis",
+    "relation": "associated_with",
+    "entity2": "Abdominal aortic aneurysm (AAA)",
+    "conditions": [
+      "patients with relapsing polychondritis"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "Pseudoxanthoma elasticum",
+    "relation": "associated_with",
+    "entity2": "Abdominal aortic aneurysm (AAA)",
+    "conditions": [
+      "patients with pseudoxanthoma elasticum"
+    ],
+    "source": "doc_0014"
+  },
+  {
+    "entity1": "abdominal ultrasound",
+    "relation": "limited_usefulness_in",
+    "entity2": "diagnosis of abdominal aortic aneurysm",
+    "conditions": [
+      "presence of bowel gas"
+    ],
+    "source": "doc_0016"
+  },
+  {
+    "entity1": "abdominal ultrasound",
+    "relation": "limited_usefulness_in",
+    "entity2": "diagnosis of abdominal aortic aneurysm",
+    "conditions": [
+      "obesity"
+    ],
+    "source": "doc_0016"
+  },
+  {
+    "entity1": "ruptured abdominal aortic aneurysm",
+    "relation": "suspected_in",
+    "entity2": "collapse",
+    "conditions": [
+      "age > 60 years"
+    ],
+    "source": "doc_0017"
+  },
+  {
+    "entity1": "ruptured abdominal aortic aneurysm",
+    "relation": "suspected_in",
+    "entity2": "unexplained low blood pressure",
+    "conditions": [
+      "age > 60 years"
+    ],
+    "source": "doc_0017"
+  },
+  {
+    "entity1": "ruptured abdominal aortic aneurysm",
+    "relation": "suspected_in",
+    "entity2": "sudden-onset back pain",
+    "conditions": [
+      "age > 60 years"
+    ],
+    "source": "doc_0017"
+  },
+  {
+    "entity1": "ruptured abdominal aortic aneurysm",
+    "relation": "suspected_in",
+    "entity2": "sudden-onset abdominal pain",
+    "conditions": [
+      "age > 60 years"
+    ],
+    "source": "doc_0017"
+  },
+  {
+    "entity1": "surgery without further imaging",
+    "relation": "recommended_for",
+    "entity2": "ruptured abdominal aortic aneurysm",
+    "conditions": [
+      "hemodynamic instability",
+      "known abdominal aortic aneurysm"
+    ],
+    "source": "doc_0017"
+  },
+  {
+    "entity1": "single screening abdominal ultrasound for abdominal aortic aneurysm",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm screening",
+    "conditions": [
+      "males",
+      "aged 65 to 75 years",
+      "history of smoking"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "screening abdominal ultrasound for abdominal aortic aneurysm",
+    "relation": "selective_for",
+    "entity2": "abdominal aortic aneurysm screening",
+    "conditions": [
+      "males",
+      "aged 65 to 75 years",
+      "no history of smoking"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "screening abdominal ultrasound for abdominal aortic aneurysm",
+    "relation": "recommended_against",
+    "entity2": "abdominal aortic aneurysm screening",
+    "conditions": [
+      "women",
+      "never smoked"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "one time screening for abdominal aortic aneurysm",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm screening",
+    "conditions": [
+      "males",
+      "over 65 years of age"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "one time screening for abdominal aortic aneurysm",
+    "relation": "reduces_risk_of",
+    "entity2": "death from abdominal aortic aneurysm by 42%",
+    "conditions": [
+      "males",
+      "over 65 years of age"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "ultrasound screening for abdominal aortic aneurysm",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm screening",
+    "conditions": [
+      "close relative diagnosed with an aortic aneurysm",
+      "around 60 years of age"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "repeat ultrasounds",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm surveillance",
+    "conditions": [
+      "aortic size greater than 3.0 cm"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "repeat ultrasounds every three years",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm surveillance",
+    "conditions": [
+      "aorta size between 3.0 and 3.9 cm"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "repeat ultrasounds every two years",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm surveillance",
+    "conditions": [
+      "aorta size between 4.0 and 4.4 cm"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "repeat ultrasounds every year",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm surveillance",
+    "conditions": [
+      "aorta size between 4.5 and 5.4 cm"
+    ],
+    "source": "doc_0019"
+  },
+  {
+    "entity1": "aneurysm repair",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "asymptomatic",
+      "aneurysm growth >1 cm per year"
+    ],
+    "source": "doc_0020"
+  },
+  {
+    "entity1": "aneurysm repair",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "asymptomatic",
+      "aneurysm diameter >5.5 cm"
+    ],
+    "source": "doc_0020"
+  },
+  {
+    "entity1": "aneurysm repair",
+    "relation": "indicated_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "symptomatic"
+    ],
+    "source": "doc_0020"
+  },
+  {
+    "entity1": "open abdominal aortic aneurysm repair",
+    "relation": "associated_with",
+    "entity2": "10-year survival rate of 59%",
+    "conditions": [
+      "post-open AAA repair"
+    ],
+    "source": "doc_0020"
+  },
+  {
+    "entity1": "conservative management",
+    "relation": "indicated_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "high mortality risk from repair"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "conservative management",
+    "relation": "indicated_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "repair unlikely to improve life expectancy"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "smoking cessation",
+    "relation": "mainstay_of",
+    "entity2": "conservative treatment of abdominal aortic aneurysm",
+    "conditions": [
+      "patients with abdominal aortic aneurysm"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "surveillance",
+    "relation": "indicated_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "aneurysm diameter <5.5 cm",
+      "asymptomatic"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "statins",
+    "relation": "not_proven_effective_for",
+    "entity2": "decreasing growth rate or rupture rate of abdominal aortic aneurysm",
+    "conditions": [
+      "asymptomatic abdominal aortic aneurysm"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "statins",
+    "relation": "may_attenuate",
+    "entity2": "growth rate and risk of surgery for abdominal aortic aneurysm",
+    "conditions": [
+      "asymptomatic abdominal aortic aneurysm"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "moderate or high intensity statins",
+    "relation": "reduces_risk_of",
+    "entity2": "myocardial infarction and stroke",
+    "conditions": [
+      "atherosclerotic abdominal aortic aneurysm"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "elective repair",
+    "relation": "favored_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "aneurysm diameter >5.5 cm",
+      "men"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "elective repair",
+    "relation": "favored_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "aneurysm diameter >5.0 cm",
+      "women"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "surgery",
+    "relation": "recommended_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "symptomatic"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "intervention",
+    "relation": "suggested_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "saccular aneurysm"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "intervention",
+    "relation": "suggested_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "growth ≥0.5 cm in 6 months"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "intervention",
+    "relation": "suggested_for",
+    "entity2": "abdominal aortic aneurysm",
+    "conditions": [
+      "growth ≥1 cm in one year"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "immediate surgical repair",
+    "relation": "indicated_for",
+    "entity2": "ruptured abdominal aortic aneurysm",
+    "conditions": [
+      "aortic rupture"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "permissive hypotension",
+    "relation": "beneficial_for",
+    "entity2": "ruptured abdominal aortic aneurysm",
+    "conditions": [
+      "aortic rupture"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "limiting intravenous fluids",
+    "relation": "beneficial_for",
+    "entity2": "ruptured abdominal aortic aneurysm",
+    "conditions": [
+      "aortic rupture"
+    ],
+    "source": "doc_0021"
+  },
+  {
+    "entity1": "abdominal aortic aneurysm repair",
+    "relation": "associated_with",
+    "entity2": "postoperative mortality 1-6%",
+    "conditions": [
+      "unruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0022"
+  },
+  {
+    "entity1": "abdominal aortic aneurysm repair",
+    "relation": "associated_with",
+    "entity2": "postoperative mortality >40%",
+    "conditions": [
+      "ruptured abdominal aortic aneurysm"
+    ],
+    "source": "doc_0022"
+  }
+]
