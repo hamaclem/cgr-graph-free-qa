@@ -1,22 +1,27 @@
 import argparse
+import os
+import re
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
 
 SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_prompt.txt"
+TUPLES_SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_tuples_prompt.txt"
 
 LLM_CONFIGS = {
     "hu": {
         "base_url": "https://llm3-compute.cms.hu-berlin.de/v1",
         "model": "llm3"
     },
+    # Ollama's OpenAI endpoint ignores num_ctx and silently truncates long prompts;
+    # set num_ctx 16384 via ollama/*.Modelfile (`ollama create <name> -f <file>`)
     "qwen2.5": {
         "base_url": "http://localhost:11434/v1",
-        "model": "qwen2.5:14b"
+        "model": "qwen2.5:14b-16k"
     },
     "llama3.1": {
         "base_url": "http://localhost:11434/v1",
-        "model": "llama3.1:8b"
+        "model": "llama3.1:8b-16k"
     }
 }
 
@@ -25,7 +30,7 @@ OPENAI_API_KEY = "secret_but_not_used"
 def create_prompt(query, retrieved_chunks, retrieved_tuples=None):
     context_parts = []
 
-    for _, chunk in retrieved_chunks.iterrows():
+    for _, chunk in (retrieved_chunks.iterrows() if retrieved_chunks is not None else []):
         context_parts.append(
             f"Article: {chunk['article']}\n"
             f"Section: {chunk['section']}\n"
@@ -39,10 +44,7 @@ def create_prompt(query, retrieved_chunks, retrieved_tuples=None):
             f"- {t['text']} [Article: {t['article']}]"
             for _, t in retrieved_tuples.iterrows()
         )
-        context += (
-            "\n\nStructured facts (a fact only applies if its conditions match the question):\n"
-            f"{facts}"
-        )
+        context = f"{context}\n\nStructured facts:\n{facts}".strip()
 
     prompt = f"""
         Answer the following biomedical question using the provided evidence.
@@ -68,16 +70,23 @@ def generate_answer(query, retrieved_chunks, system_prompt, client, model, retri
         stream=False,
     )
 
-    return response.choices[0].message.content
+    prompt_tokens = response.usage.prompt_tokens if response.usage else None  # shows whether the prompt was truncated
+    return response.choices[0].message.content, prompt_tokens
+
+ANSWER_MARKER = re.compile(r"\**\s*answer\s*\**\s*:\s*\**", re.IGNORECASE)  # ANSWER:, **ANSWER:**, **Answer**:
 
 def extract_short_answer(response):
-    if not response:
+    # last marker wins
+    if not isinstance(response, str) or not response:
         return ""
 
-    if "ANSWER:" in response:
-        return response.split("ANSWER:", 1)[1].strip()
+    matches = list(ANSWER_MARKER.finditer(response))
+    if not matches:
+        return ""
 
-    return response.strip()
+    tail = response[matches[-1].end():].strip()
+    first_line = tail.splitlines()[0] if tail else ""
+    return first_line.strip().strip("*\"'` ").rstrip(".").strip()
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -89,14 +98,14 @@ def parse_args():
     )
     parser.add_argument(
         "--embed",
-        choices=["medcpt", "hu"],
+        choices=["medcpt", "hu", "oracle"],  # oracle = gold-article chunks
         type=str,
         default="medcpt"
     )
     parser.add_argument(
         "--top_k",
         type=int,
-        default=5
+        default=10
     )
     parser.add_argument(
         "--normalized",
@@ -108,8 +117,19 @@ def parse_args():
         type=int,
         default=0
     )
+    parser.add_argument(
+        "--context",
+        choices=["docs", "tuples", "both"],
+        type=str,
+        default=None  # None = "both" if --tuples_k > 0 else "docs"
+    )
 
     args = parser.parse_args()
+
+    if args.context is None:
+        args.context = "both" if args.tuples_k else "docs"
+    if args.context != "docs" and not args.tuples_k:
+        parser.error(f"--context {args.context} requires --tuples_k > 0")
 
     if args.normalized is None:
         args.normalized = args.embed == "hu"
@@ -121,15 +141,18 @@ def parse_args():
         api_key=OPENAI_API_KEY,
     )
 
-    return client, config, args.llm, args.embed, args.top_k, args.normalized, args.tuples_k
+    return client, config, args.llm, args.embed, args.top_k, args.normalized, args.tuples_k, args.context
 
 def main():
-    client, config, llm, embed, top_k, normalized, tuples_k = parse_args()
+    client, config, llm, embed, top_k, normalized, tuples_k, context = parse_args()
 
     suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     retrieval_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
     tuples_suffix = f"_tuples{tuples_k}" if tuples_k else ""
-    output_path = f"results/answers/answers_{llm}_{embed}{suffix}_top{top_k}{tuples_suffix}.xlsx"
+    if context == "tuples":
+        output_path = f"results/answers/{llm}/answers_{llm}_{embed}{suffix}_tuplesonly{tuples_k}.xlsx"
+    else:
+        output_path = f"results/answers/{llm}/answers_{llm}_{embed}{suffix}_top{top_k}{tuples_suffix}.xlsx"
 
     retrieval_df = pd.read_excel(retrieval_path)
 
@@ -140,6 +163,16 @@ def main():
 
     with open(SYSTEM_PROMPT_PATH, "r") as file:
         system_prompt = file.read()
+    if tuples_k:
+        with open(TUPLES_SYSTEM_PROMPT_PATH, "r") as file:
+            tuples_prompt = file.read()
+        if context == "tuples":  # no passages in context: facts are the whole evidence, drop rules about passages
+            lead = "The evidence may end with structured facts"
+            assert lead in tuples_prompt and "text passages" in tuples_prompt, \
+                "tuples prompt wording changed: update the tuples-only adjustments in generate_answers.py"
+            tuples_prompt = tuples_prompt.replace(lead, "The evidence consists only of structured facts")
+            tuples_prompt = "\n".join(l for l in tuples_prompt.splitlines() if "text passages" not in l)
+        system_prompt += tuples_prompt
 
     results = []
 
@@ -152,20 +185,23 @@ def main():
             unit="question"
         ), start=1):
 
-        retrieved_chunks = group.head(top_k)
-        retrieved_tuples = tuple_groups[query] if tuples_k else None
+        retrieved_chunks = None if context == "tuples" else group.head(top_k)
+        retrieved_tuples = tuple_groups.get(query, tuples_df.head(0)) if tuples_k else None
 
-        full_answer = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"], retrieved_tuples)
+        full_answer, prompt_tokens = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"], retrieved_tuples)
         short_answer = extract_short_answer(full_answer)
 
         results.append({
             "id": query_id,
             "q": query,
             "a": short_answer,
-            "r": full_answer
+            "r": full_answer,
+            "format_ok": bool(short_answer),
+            "prompt_tokens": prompt_tokens
         })
 
     results_df = pd.DataFrame(results)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     results_df.to_excel(output_path, index=False)
 
 if __name__ == "__main__":

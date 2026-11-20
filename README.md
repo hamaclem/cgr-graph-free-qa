@@ -44,6 +44,16 @@ python src/rag/retrieve.py --embed {medcpt,hu} [--source tuples]        # -> res
 python src/rag/eval_retrieval.py --embed {medcpt,hu} [--source tuples]  # -> results/evaluation/retrieval/eval_retrieval_<embed>[_tuples].xlsx
 ```
 
+### Oracle contexts (upper bound: perfect retrieval)
+
+```bash
+python src/rag/build_oracle.py   # -> results/retrieval/retrieval_results_oracle[_tuples].xlsx
+python src/rag/generate_answers.py --llm hu --embed oracle --top_k 100                  # all chunks of both gold articles
+python src/rag/generate_answers.py --llm hu --embed oracle --top_k 100 --tuples_k 300   # same chunks + all tuples of both gold articles
+```
+
+Evaluate with the same arguments via `eval_rag.py`. The values only mean "take all": up to 52 chunks and 238 tuples per question.
+
 ## 5. Answer generation
 
 ```bash
@@ -51,13 +61,20 @@ python src/rag/generate_answers.py --llm {hu,qwen2.5,llama3.1} --embed {medcpt,h
 python src/rag/run_all_answer_generations.py   # loops over LLMS, EMBEDS, TOP_K, TUPLES_K
 ```
 
-Output: `results/answers/answers_<llm>_<embed>_top<k>[_tuples<N>].xlsx`. System prompt: `src/prompts/answerGeneration_prompt.txt`.
+Output: `results/answers/<llm>/answers_<llm>_<embed>_top<k>[_tuples<N>].xlsx` (one subfolder per generator model). System prompt: `src/prompts/answerGeneration_prompt.txt`.
+
+Local models (`qwen2.5`, `llama3.1`) run on Ollama with a 16k context. Ollama's OpenAI endpoint ignores `num_ctx` and silently truncates prompts to ~2k tokens, so create the variants once:
+
+```bash
+ollama create qwen2.5:14b-16k -f ollama/qwen2.5-14b-16k.Modelfile
+ollama create llama3.1:8b-16k -f ollama/llama3.1-8b-16k.Modelfile
+```
 
 ## 6. Answer evaluation
 
 ```bash
-python src/rag/eval_rag.py --llm {hu,qwen2.5,llama3.1} --embed {medcpt,hu} --top_k {1,3,5,10} [--tuples_k N]   # -> results/evaluation/answers/eval_rag_*.xlsx
-python src/rag/eval_rag_combined.py   # -> eval_rag_combined.xlsx (all runs + metrics)
+python src/rag/eval_rag.py --llm {hu,qwen2.5,llama3.1} --embed {medcpt,hu} --top_k {1,3,5,10} [--tuples_k N]   # -> results/evaluation/answers/<llm>/eval_rag_*.xlsx
+python src/rag/eval_rag_combined.py   # -> results/evaluation/answers/eval_rag_combined.xlsx
 ```
 
-`eval_rag_combined.py` loops over `llms`, `embeds`, `top_ks`, `tuples_ks`
+`eval_rag_combined.py` finds every evaluated run automatically and writes one overview row per run (settings, EM, lenient EM, F1, format failures, prompt tokens), plus every run's answers side by side.

@@ -1,57 +1,58 @@
-from pathlib import Path
+import glob
+import os
+import re
 import pandas as pd
 
 GROUND_TRUTH_PATH = "data/raw/condmedqa.xlsx"
 OUTPUT_PATH = "results/evaluation/answers/eval_rag_combined.xlsx"
+NAME = re.compile(
+    r"(?P<llm>[^_]+)_(?P<embed>[^_]+)(?P<norm>_normalized|_unnormalized)?"
+    r"_(?:tuplesonly(?P<only>\d+)|top(?P<top_k>\d+)(?:_tuples(?P<tuples>\d+))?)$"
+)
+
+def parse(name):
+    match = NAME.match(name)
+    if not match:
+        return None
+    tuples_k = int(match["only"] or match["tuples"] or 0)
+    return {
+        "run": name,
+        "llm": match["llm"],
+        "embed": match["embed"] + (match["norm"] or ""),
+        "top_k": None if match["only"] else int(match["top_k"]),
+        "tuples_k": tuples_k,
+        "context": "tuples" if match["only"] else ("both" if tuples_k else "docs"),
+    }
 
 def main():
-    llms = ["hu", "qwen2.5", "llama3.1"]
-    embeds = ["medcpt", "hu"]
-    top_ks = [1, 3, 5, 10]
-    tuples_ks = [0, 5, 10]
-
-    ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
-    combined_df = ground_truth_df[["id", "q", "a"]].rename(
-        columns={"a": "ground_truth"}
-    )
-
+    combined_df = pd.read_excel(GROUND_TRUTH_PATH)[["id", "q", "a"]].rename(columns={"a": "ground_truth"})
     metrics = []
 
-    for model in llms:
-        for embed in embeds:
-                for top_k in top_ks:
-                    for tuples_k in tuples_ks:
-                        name = f"{model}_{embed}_top{top_k}" + (f"_tuples{tuples_k}" if tuples_k else "")
-                        file = Path(f"results/evaluation/answers/eval_rag_{name}.xlsx")
+    for path in sorted(glob.glob("results/evaluation/answers/*/eval_rag_*.xlsx")):
+        name = os.path.basename(path)[len("eval_rag_"):-len(".xlsx")]
+        run = parse(name)
 
-                        df = pd.read_excel(file)
+        df = pd.read_excel(path, sheet_name="Answers")
+        answers_path = f"results/answers/{run['llm']}/answers_{name}.xlsx"
+        answers = pd.read_excel(answers_path) if os.path.exists(answers_path) else pd.DataFrame()
 
-                        answers = df[["id", "a"]].rename(
-                            columns={"a": f"a_{name}"}
-                        )
-                        combined_df = combined_df.merge(answers, on="id", how="left")
+        metrics.append({
+            **run,
+            "EM": df["em"].mean(),
+            "EM_lenient": df["em_lenient"].mean() if "em_lenient" in df else None,
+            "F1": df["f1"].mean(),
+            "format_failures": int((~answers["format_ok"].astype(bool)).sum()) if "format_ok" in answers else None,
+            "prompt_tokens_max": answers["prompt_tokens"].max() if "prompt_tokens" in answers else None,
+        })
+        combined_df = combined_df.merge(df[["id", "a"]].rename(columns={"a": f"a_{name}"}), on="id", how="left")
 
-                        metrics.append({
-                            "model": model,
-                            "embedding_model": embed,
-                            "top_k": top_k,
-                            "tuples_k": tuples_k,
-                            "EM": df["em"].mean(),
-                            "F1": df["f1"].mean()
-                        })
+    metrics_df = pd.DataFrame(metrics).sort_values(["llm", "embed", "context", "top_k", "tuples_k"], na_position="last")
+    print(metrics_df[["run", "EM", "EM_lenient", "F1"]].to_string(index=False, float_format=lambda x: f"{x:.2%}"))
 
-    metrics_df = pd.DataFrame(metrics)
-
-    for _, row in metrics_df.iterrows():
-        print(
-            f'{row["model"]}, embedding={row["embedding_model"]}, '
-            f'top_k={row["top_k"]}, tuples_k={row["tuples_k"]}: '
-            f'EM: {row["EM"]:.2%}, F1: {row["F1"]:.2%}'
-        )
-
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with pd.ExcelWriter(OUTPUT_PATH) as writer:
-        combined_df.to_excel(writer, sheet_name="Answers", index=False)
         metrics_df.to_excel(writer, sheet_name="Metrics", index=False)
+        combined_df.to_excel(writer, sheet_name="Answers", index=False)
 
 if __name__ == "__main__":
     main()

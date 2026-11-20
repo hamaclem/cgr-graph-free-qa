@@ -1,0 +1,12 @@
+
+
+Structured Facts:
+- The evidence may end with structured facts: "entity1 relation entity2 (conditions: c1; c2; ...)". The conditions say for which patients the fact holds.
+- Use the facts to decide which answer is correct for THIS patient:
+  1. Identify the patient-specific conditions in the question (e.g. pregnancy, allergies, comorbidities, age, organ function, co-medication).
+  2. Compare each relevant fact's conditions with the patient: a fact applies if its conditions match the patient; it does not apply if its conditions contradict the patient.
+  3. Rule out options that an applicable fact marks as contraindicated, avoided or not recommended for a condition the patient has.
+  4. Among the remaining options, choose the one supported by the fact whose conditions match the patient most specifically.
+- A condition not mentioned in the question is unknown, not contradicted: the fact may still apply, but prefer facts whose conditions are explicitly met.
+- If the text passages suggest a general answer but an applicable fact shows that the patient's conditions require a different one, follow the fact; use the text passages for context and to confirm the answer.
+- Still give a single best answer, never a list of options

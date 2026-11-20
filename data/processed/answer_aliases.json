@@ -1,0 +1,22 @@
+{
+  "Acetaminophen": ["Paracetamol"],
+  "Atomoxetine": ["Strattera"],
+  "Benzodiazepines": ["Benzodiazepine"],
+  "CT angiography": ["CTA", "Computed Tomography Angiography", "CT angiogram"],
+  "CT myelogram": ["CT myelography"],
+  "CT scan": ["CT", "Computed tomography"],
+  "Dactinomycin": ["Actinomycin D"],
+  "Endoscopic variceal ligation": ["Variceal ligation", "EVL", "Variceal band ligation"],
+  "HIDA scan": ["HIDA", "Cholescintigraphy", "Hepatobiliary scintigraphy"],
+  "Low-molecular-weight heparin (LMWH)": ["LMWH", "Low molecular weight heparin"],
+  "MR angiography": ["MRA", "Magnetic resonance angiography"],
+  "Propylthiouracil": ["PTU"],
+  "Propylthiouracil (PTU)": ["PTU"],
+  "Pyrazinamide": ["PZA"],
+  "Restriction of tyrosine and phenylalanine intake": ["Dietary restriction of tyrosine and phenylalanine"],
+  "TNF inhibitors (anti-TNF biologics)": ["TNF inhibitor", "TNF-α inhibitors", "TNF alpha inhibitors", "TNF_inhibitor", "Anti-TNF", "anti-TNF therapies", "Anti-TNF therapy"],
+  "Transesophageal echocardiography (TEE)": ["TEE", "Transesophageal echocardiogram"],
+  "Upper GI series": ["UGI series", "Upper gastrointestinal series"],
+  "V/Q scan": ["V/Q scans", "Ventilation/perfusion scan", "Ventilation perfusion scan", "VQ scan"],
+  "Xanthic urolithiasis": ["Xanthine urolithiasis", "Xanthine stones", "Xanthine calculi"]
+}
