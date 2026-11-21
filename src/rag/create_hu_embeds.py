@@ -1,6 +1,7 @@
 import os
 import argparse
 import numpy as np
+from tqdm import tqdm
 from openai import OpenAI
 from load_texts import load_texts
 
@@ -15,7 +16,7 @@ def generate_embeddings(texts):
 
     embeds = []
 
-    for start in range(0, len(texts), BATCH_SIZE):
+    for start in tqdm(range(0, len(texts), BATCH_SIZE), total=(len(texts) + BATCH_SIZE - 1) // BATCH_SIZE, desc="Generating embeddings", unit="batch"):
         batch = texts[start:start + BATCH_SIZE]
 
         response = client.embeddings.create(
