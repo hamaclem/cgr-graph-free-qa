@@ -74,6 +74,10 @@ def parse_args():
         type=str,
         default=None  # None = "both" if --tuples_k > 0 else "docs"; must match generate_answers.py
     )
+    parser.add_argument(
+        "--gate",
+        action="store_true"  # must match generate_answers.py
+    )
 
     args = parser.parse_args()
 
@@ -85,20 +89,21 @@ def parse_args():
     if args.normalized is None:
         args.normalized = args.embed == "hu"
 
-    return args.llm, args.embed, args.top_k, args.normalized, args.tuples_k, args.context
+    return args.llm, args.embed, args.top_k, args.normalized, args.tuples_k, args.context, args.gate
 
 
 def main():
-    llm, embed, top_k, normalized, tuples_k, context = parse_args()
+    llm, embed, top_k, normalized, tuples_k, context, gate = parse_args()
 
     infix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     tuples_suffix = f"_tuples{tuples_k}" if tuples_k else ""
-    name = f"{llm}_{embed}{infix}_tuplesonly{tuples_k}" if context == "tuples" else f"{llm}_{embed}{infix}_top{top_k}{tuples_suffix}"
+    gate_suffix = "_gated" if gate else ""
+    name = (f"{llm}_{embed}{infix}_tuplesonly{tuples_k}" if context == "tuples" else f"{llm}_{embed}{infix}_top{top_k}{tuples_suffix}") + gate_suffix
     rag_answers_path = f"results/answers/{llm}/answers_{name}.xlsx"
     output_path = f"results/evaluation/answers/{llm}/eval_rag_{name}.xlsx"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    rag_df = pd.read_excel(rag_answers_path)
+    rag_df = pd.read_excel(rag_answers_path, keep_default_na=False)
 
     ground_truth_df = pd.read_excel(GROUND_TRUTH_PATH)
     ground_truth_df = ground_truth_df.rename(

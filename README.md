@@ -52,7 +52,7 @@ python src/rag/generate_answers.py --llm hu --embed oracle --top_k 100          
 python src/rag/generate_answers.py --llm hu --embed oracle --top_k 100 --tuples_k 300   # same chunks + all tuples of both gold articles
 ```
 
-Evaluate with the same arguments via `eval_rag.py`. The values only mean "take all": up to 52 chunks and 238 tuples per question.
+Evaluate with the same arguments via `eval_rag.py`. The values only mean "take all": up to 52 chunks and 280 tuples per question.
 
 ## 5. Answer generation
 
@@ -70,6 +70,21 @@ ollama create qwen2.5:14b-16k -f ollama/qwen2.5-14b-16k.Modelfile
 ollama create llama3.1:8b-16k -f ollama/llama3.1-8b-16k.Modelfile
 ```
 
+### Condition gating
+
+Before the first gated run, create an empty cache if it does not already exist:
+
+```bash
+[ -f data/processed/condition_evals.json ] || printf '{}\n' > data/processed/condition_evals.json
+```
+
+```bash
+python src/rag/gate_tuples.py --embed {medcpt,hu,oracle} [--tuples_k 50]   # LLM judges each condition of the top-k retrieved tuples -> data/processed/condition_evals.json
+python src/rag/generate_answers.py --llm hu --embed medcpt --tuples_k 50 --gate [--context tuples]
+```
+
+`gate_tuples.py` caches one True/False/null per (question, condition), so it only asks about conditions it hasn't seen. `--gate` drops a tuple if at least one of its conditions is False. Output names end in `_gated`. Evaluate with the same `--gate`.
+
 ## 6. Answer evaluation
 
 ```bash
@@ -77,4 +92,4 @@ python src/rag/eval_rag.py --llm {hu,qwen2.5,llama3.1} --embed {medcpt,hu} --top
 python src/rag/eval_rag_combined.py   # -> results/evaluation/answers/eval_rag_combined.xlsx
 ```
 
-`eval_rag_combined.py` finds every evaluated run automatically and writes one overview row per run (settings, EM, lenient EM, F1, format failures, prompt tokens), plus every run's answers side by side.
+`eval_rag_combined.py` finds every evaluated run automatically and writes one overview row per run (settings, EM, lenient EM, F1, format failures, prompt tokens), plus every run's answers side by side. Gated runs get a `gate` column and the mean number of tuples left after gating.

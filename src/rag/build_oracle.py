@@ -44,7 +44,7 @@ def main():
                 rank += 1
                 tuple_rows.append({"query": q.q, 
                                    "rank": rank, 
-                                   "chunk_index": i,
+                                   "tuple_index": i,
                                    "doc_id": tuple["source"], "article": article, "text": tuple_to_text(tuple)})
 
     chunk_df, tuple_df = pd.DataFrame(chunk_rows), pd.DataFrame(tuple_rows)

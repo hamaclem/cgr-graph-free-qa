@@ -4,13 +4,14 @@ import pandas as pd
 from urllib.parse import urlparse, unquote
 
 GROUND_TRUTH_PATH = "data/raw/condmedqa.xlsx"
-TOP_K = [1, 3, 5, 10]
+TOP_K = {"chunks": [1, 3, 5, 10], "tuples": [10, 30, 50, 100]}
+
+REDIRECTS = {"AIDS": "Management_of_HIV/AIDS", "perfusion_scan": "Ventilation/perfusion_scan"}
 
 def extract_article(article):
-    article = urlparse(article).path.split("/")[-1]
-    article = unquote(article)
+    article = unquote(urlparse(article).path.split("/wiki/", 1)[-1])
 
-    return article
+    return REDIRECTS.get(article, article)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -61,23 +62,19 @@ def main():
             retrieval_results["query"] == query
         ].sort_values("rank")
 
-        retrieved_articles = list(dict.fromkeys(retrieved["article"]))
-
         result = {
             "query": query,
             "relevant_articles": ", ".join(sorted(articles))
         }
 
-        for k in TOP_K:
-            top_k_articles = set(retrieved_articles[:k])
+        for k in TOP_K[args.source]:
+            top_k_articles = set(retrieved["article"].head(k))
             found = articles.intersection(top_k_articles)
 
             recall = len(found) / 2
-
-            result[f"retrieved_articles_at_{k}"] = ", ".join(top_k_articles)
+            result[f"retrieved_articles_at_{k}"] = ", ".join(sorted(top_k_articles))
             result[f"found_articles_at_{k}"] = ", ".join(sorted(found)) 
             result[f"recall_at_{k}"] = recall
-            
 
         evaluation.append(result)
 
@@ -89,12 +86,9 @@ def main():
 
         recalls = pd.DataFrame([{
             f"mean_recall_at_{k}": evaluation_df[f"recall_at_{k}"].mean()
-            for k in TOP_K
+            for k in TOP_K[args.source]
         }])
     
         recalls.to_excel(writer, sheet_name="Recall", index=False)
-
-    evaluation_df = pd.DataFrame(evaluation)
-
 if __name__ == "__main__":
     main()

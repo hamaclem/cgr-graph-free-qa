@@ -35,7 +35,7 @@ def chunk_fields(chunk):
 def tuple_fields(tuple):
     return {"doc_id": tuple["source"], "article": tuple["article"], "text": tuple_to_text(tuple)}
 
-def process_batch(batch_queries, encode_queries, index, chunks, normalized, item_fields):
+def process_batch(batch_queries, encode_queries, index, items, normalized, item_fields, index_column):
     embeds = encode_queries(batch_queries)
 
     if normalized:
@@ -46,7 +46,7 @@ def process_batch(batch_queries, encode_queries, index, chunks, normalized, item
     results = []
 
     for query, query_scores, query_indices in zip(batch_queries, scores, indices):
-        for rank, (score, chunk_index) in enumerate(
+        for rank, (score, item_index) in enumerate(
             zip(query_scores, query_indices),
             start=1
         ):
@@ -54,8 +54,8 @@ def process_batch(batch_queries, encode_queries, index, chunks, normalized, item
                 "query": query,
                 "rank": rank,
                 "score": float(score),
-                "chunk_index": int(chunk_index),
-                **item_fields(chunks[chunk_index])
+                index_column: int(item_index),
+                **item_fields(items[item_index])
             })
     return results
 
@@ -110,7 +110,7 @@ def main():
     queries = pd.read_excel(QUERIES_PATH)
     queries = queries["q"].tolist()
 
-    items_path, item_fields = (TUPLES_PATH, tuple_fields) if source == "tuples" else (CHUNKS_PATH, chunk_fields)
+    items_path, item_fields, index_column = ((TUPLES_PATH, tuple_fields, "tuple_index") if source == "tuples" else (CHUNKS_PATH, chunk_fields, "chunk_index"))
     with open(items_path, "r") as f:
         chunks = json.load(f)
 
@@ -126,7 +126,7 @@ def main():
 
     for start in range(0, len(queries), BATCH_SIZE):
         batch_queries = queries[start:start + BATCH_SIZE]
-        results.extend(process_batch(batch_queries, encode, index, chunks, normalized, item_fields))
+        results.extend(process_batch(batch_queries, encode, index, chunks, normalized, item_fields, index_column))
 
     suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
     tuple_suffix = "_tuples" if source == "tuples" else ""

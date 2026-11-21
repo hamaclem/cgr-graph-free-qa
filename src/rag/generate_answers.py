@@ -1,9 +1,12 @@
 import argparse
 import os
 import re
+import json
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
+from load_texts import TUPLES_PATH
+from gate_tuples import load_cache, filter_tuples
 
 SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_prompt.txt"
 TUPLES_SYSTEM_PROMPT_PATH = "src/prompts/answerGeneration_tuples_prompt.txt"
@@ -39,7 +42,7 @@ def create_prompt(query, retrieved_chunks, retrieved_tuples=None):
 
     context = "\n\n".join(context_parts)
 
-    if retrieved_tuples is not None:
+    if retrieved_tuples is not None and not retrieved_tuples.empty:
         facts = "\n".join(
             f"- {t['text']} [Article: {t['article']}]"
             for _, t in retrieved_tuples.iterrows()
@@ -123,6 +126,10 @@ def parse_args():
         type=str,
         default=None  # None = "both" if --tuples_k > 0 else "docs"
     )
+    parser.add_argument(
+        "--gate",
+        action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -130,6 +137,8 @@ def parse_args():
         args.context = "both" if args.tuples_k else "docs"
     if args.context != "docs" and not args.tuples_k:
         parser.error(f"--context {args.context} requires --tuples_k > 0")
+    if args.gate and not args.tuples_k:
+        parser.error("--gate requires --tuples_k > 0")
 
     if args.normalized is None:
         args.normalized = args.embed == "hu"
@@ -141,25 +150,33 @@ def parse_args():
         api_key=OPENAI_API_KEY,
     )
 
-    return client, config, args.llm, args.embed, args.top_k, args.normalized, args.tuples_k, args.context
+    return client, config, args.llm, args.embed, args.top_k, args.normalized, args.tuples_k, args.context, args.gate
 
 def main():
-    client, config, llm, embed, top_k, normalized, tuples_k, context = parse_args()
+    client, config, llm, embed, top_k, normalized, tuples_k, context, gate = parse_args()
 
-    suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
-    retrieval_path = f"results/retrieval/retrieval_results_{embed}{suffix}.xlsx"
+    normalize_suffix = "" if normalized == (embed == "hu") else ("_normalized" if normalized else "_unnormalized")  # suffix only when deviating from per-model default
+    retrieval_path = f"results/retrieval/retrieval_results_{embed}{normalize_suffix}.xlsx"
     tuples_suffix = f"_tuples{tuples_k}" if tuples_k else ""
+    gate_suffix = "_gated" if gate else ""
     if context == "tuples":
-        output_path = f"results/answers/{llm}/answers_{llm}_{embed}{suffix}_tuplesonly{tuples_k}.xlsx"
+        output_path = f"results/answers/{llm}/answers_{llm}_{embed}{normalize_suffix}_tuplesonly{tuples_k}{gate_suffix}.xlsx"
     else:
-        output_path = f"results/answers/{llm}/answers_{llm}_{embed}{suffix}_top{top_k}{tuples_suffix}.xlsx"
+        output_path = f"results/answers/{llm}/answers_{llm}_{embed}{normalize_suffix}_top{top_k}{tuples_suffix}{gate_suffix}.xlsx"
 
     retrieval_df = pd.read_excel(retrieval_path)
 
     tuple_groups = {}
     if tuples_k:
-        tuples_df = pd.read_excel(f"results/retrieval/retrieval_results_{embed}{suffix}_tuples.xlsx")
+        tuples_df = pd.read_excel(f"results/retrieval/retrieval_results_{embed}{normalize_suffix}_tuples.xlsx")
         tuple_groups = {q: g.sort_values("rank").head(tuples_k) for q, g in tuples_df.groupby("query")}
+
+        # gating
+        if gate:
+            with open(TUPLES_PATH) as file:
+                tuples = json.load(file)
+            cache = load_cache()
+            tuple_groups = {q: filter_tuples(g, tuples, cache[q]) for q, g in tuple_groups.items()}
 
     with open(SYSTEM_PROMPT_PATH, "r") as file:
         system_prompt = file.read()
@@ -185,7 +202,7 @@ def main():
             unit="question"
         ), start=1):
 
-        retrieved_chunks = None if context == "tuples" else group.head(top_k)
+        retrieved_chunks = None if context == "tuples" else group.sort_values("rank").head(top_k)
         retrieved_tuples = tuple_groups.get(query, tuples_df.head(0)) if tuples_k else None
 
         full_answer, prompt_tokens = generate_answer(query, retrieved_chunks, system_prompt, client, config["model"], retrieved_tuples)
@@ -197,7 +214,8 @@ def main():
             "a": short_answer,
             "r": full_answer,
             "format_ok": bool(short_answer),
-            "prompt_tokens": prompt_tokens
+            "prompt_tokens": prompt_tokens,
+            "n_tuples": len(retrieved_tuples) if retrieved_tuples is not None else 0
         })
 
     results_df = pd.DataFrame(results)
